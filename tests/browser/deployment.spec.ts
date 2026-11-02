@@ -1,0 +1,46 @@
+import { test, expect } from '@playwright/test'
+
+test('部署资源加载完整且没有外部运行时依赖', async ({ page, baseURL }) => {
+  const failures: string[] = [], external: string[] = []
+  const origin = new URL(baseURL!).origin
+  page.on('requestfailed', request => failures.push(request.url()))
+  page.on('response', response => { if (response.status() >= 400) failures.push(`${response.status()} ${response.url()}`) })
+  page.on('request', request => { if (request.url().startsWith('http') && new URL(request.url()).origin !== origin) external.push(request.url()) })
+  await page.goto('/')
+  await page.waitForLoadState('networkidle')
+  await page.evaluate(() => document.fonts.ready)
+  const icon = await page.locator('link[rel="icon"]').getAttribute('href')
+  const response = await page.request.get(icon!)
+  expect(response.ok()).toBe(true)
+  expect(response.headers()['content-type']).toContain('image/svg+xml')
+  expect(await page.evaluate(() => document.fonts.check('16px "Geist Variable"'))).toBe(true)
+  expect(failures).toEqual([])
+  expect(external).toEqual([])
+})
+
+test('真正关闭页面后重新打开，运行中计时校准、暂停保持和到期提示', async ({ page, context }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '开始专注', exact: true }).click()
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('focus.timer.v1')!).status)).toBe('running')
+  const endsAt = await page.evaluate(() => JSON.parse(localStorage.getItem('focus.timer.v1')!).endsAt as number)
+  await page.close()
+  let reopened = await context.newPage()
+  await reopened.goto('/')
+  await expect(reopened.getByRole('button', { name: '暂停一下' })).toBeVisible()
+  expect(await reopened.evaluate(() => JSON.parse(localStorage.getItem('focus.timer.v1')!).endsAt)).toBe(endsAt)
+  await reopened.getByRole('button', { name: '暂停一下' }).click()
+  await expect.poll(() => reopened.evaluate(() => JSON.parse(localStorage.getItem('focus.timer.v1')!).status)).toBe('paused')
+  const pausedTime = await reopened.getByRole('timer').textContent()
+  await reopened.close()
+  reopened = await context.newPage()
+  await reopened.goto('/')
+  await expect(reopened.getByRole('button', { name: '继续专注' })).toBeVisible()
+  await expect(reopened.getByRole('timer')).toHaveText(pausedTime!)
+  // Simulate the saved deadline passing while the page is closed.
+  await reopened.evaluate(() => localStorage.setItem('focus.timer.v1', JSON.stringify({ status: 'running', durationMs: 60000, remainingMs: 60000, endsAt: Date.now() - 1000 })))
+  await reopened.close()
+  reopened = await context.newPage()
+  await reopened.goto('/')
+  await expect(reopened.getByText('专注完成，辛苦了！')).toBeVisible()
+  await expect(reopened.getByRole('timer')).toHaveText('00:00')
+})
