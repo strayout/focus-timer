@@ -354,3 +354,9 @@ h1 > span { display: inline-block; position: relative; transform-origin: 50% 70%
   .start-button::after { display: none; }
   [data-slot='command-item'][data-selected='true'] { padding-left: 8px; }
 }
+
+/* B · two text layers, never a long digit reel. */
+.rolling-time { display: inline-grid; position: relative; overflow: hidden; vertical-align: bottom; }
+.rolling-time > span { grid-area: 1 / 1; white-space: nowrap; }
+.rolling-previous { position: absolute; inset: 0; opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .rolling-previous { display: none; } }
