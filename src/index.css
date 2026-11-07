@@ -360,3 +360,7 @@ h1 > span { display: inline-block; position: relative; transform-origin: 50% 70%
 .rolling-time > span { grid-area: 1 / 1; white-space: nowrap; }
 .rolling-previous { position: absolute; inset: 0; opacity: 0; }
 @media (prefers-reduced-motion: reduce) { .rolling-previous { display: none; } }
+
+/* D · transient edge light; the completion hook owns the one-shot animation. */
+.completion-glow { position: fixed; inset: 0; z-index: 20; pointer-events: none; opacity: 0; box-shadow: inset 0 0 90px 14px color-mix(in srgb, var(--primary) 30%, transparent); }
+@media (prefers-reduced-motion: reduce) { .completion-glow { display: none; } }
