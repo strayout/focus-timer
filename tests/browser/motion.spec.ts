@@ -81,3 +81,43 @@ test('环境视差与语录过渡可关闭，后台暂停装饰动画', async ({
   await expect(page.locator('.app-shell')).toHaveAttribute('data-hidden', 'true')
   expect(await page.locator('.environment-halos > span').first().evaluate(el => getComputedStyle(el).animationPlayState)).toBe('paused')
 })
+
+test('专注模式保留浅深色小字对比度，减少动态效果恢复默认图标', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '开始专注', exact: true }).click()
+  await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/favicon.svg')
+  const contrast = async () => page.evaluate(() => {
+    const canvas = document.createElement('canvas'); canvas.width = canvas.height = 1
+    const ctx = canvas.getContext('2d')!
+    const rgb = (color: string) => { ctx.clearRect(0, 0, 1, 1); ctx.fillStyle = color; ctx.fillRect(0, 0, 1, 1); return [...ctx.getImageData(0, 0, 1, 1).data].slice(0, 3) }
+    const luminance = (channels: number[]) => channels.map(c => { const n = c / 255; return n <= .04045 ? n / 12.92 : ((n + .055) / 1.055) ** 2.4 }).reduce((sum, n, i) => sum + n * [.2126, .7152, .0722][i], 0)
+    const bg = rgb(getComputedStyle(document.documentElement).getPropertyValue('--background'))
+    return ['.gentle-note p', '.page-intro p', '.tool-title p', '.local-note', '.quote-label'].map(selector => {
+      const el = document.querySelector(selector)!, fg = rgb(getComputedStyle(el).color)
+      let opacity = 1, ancestor: Element | null = el
+      while (ancestor) { opacity *= Number(getComputedStyle(ancestor).opacity); ancestor = ancestor.parentElement }
+      const ink = fg.map((c, i) => c * opacity + bg[i] * (1 - opacity))
+      return (luminance(bg) + .05) / (luminance(ink) + .05)
+    }).map(ratio => ratio < 1 ? 1 / ratio : ratio)
+  })
+  expect(Math.min(...await contrast())).toBeGreaterThanOrEqual(4.5)
+  await page.getByRole('button', { name: '切换深色模式' }).click()
+  expect(Math.min(...await contrast())).toBeGreaterThanOrEqual(4.5)
+})
+
+test('动画与观察器不可用时，基础计时与语录仍正常', async ({ page }) => {
+  await page.addInitScript(() => {
+    Element.prototype.animate = () => { throw new Error('Animations unavailable') }
+    window.ResizeObserver = class { constructor() { throw new Error('Observer unavailable') } } as unknown as typeof ResizeObserver
+    window.IntersectionObserver = class { constructor() { throw new Error('Observer unavailable') } } as unknown as typeof IntersectionObserver
+  })
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/')
+  await page.getByRole('button', { name: '开始专注', exact: true }).click()
+  await page.getByRole('button', { name: '换一句', exact: true }).click()
+  await page.getByRole('button', { name: '暂停一下' }).click()
+  await expect(page.getByRole('button', { name: '继续专注' })).toBeVisible()
+  await expect(page.locator('.quote-letters')).not.toBeEmpty()
+  await page.getByRole('button', { name: '重置', exact: true }).click()
+  await expect(page.getByRole('timer')).toHaveText('25:00')
+})

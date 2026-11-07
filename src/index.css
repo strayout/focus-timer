@@ -389,3 +389,10 @@ h1 > span { display: inline-block; position: relative; transform-origin: 50% 70%
 }
 .quote-letters { font-family: 'KaiTi', 'STKaiti', 'Microsoft YaHei', serif; font-size: 25px; font-weight: 500; line-height: 1.85; letter-spacing: 1.2px; overflow-wrap: anywhere; }
 @media (max-width: 650px) { .quote-letters { font-size: 23px; } }
+/* Completed entrance animations must release opacity to the focus-mode rules. */
+.topbar, .page-intro, .timer-panel, .side-column > section { animation-fill-mode: backwards; }
+.app-shell[data-status='completed'] h1 > span { animation: none; }
+/* Focus mode keeps small text readable after compositing. */
+:root:not(.dark) { --muted-foreground: #626679; }
+.app-shell[data-running='true'] .page-intro :is(p, .eyebrow, .local-note) { color: var(--foreground); }
+.app-shell[data-running='true'] .side-column .quote-label { opacity: 1; color: var(--foreground); }

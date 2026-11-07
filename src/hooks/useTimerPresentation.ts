@@ -57,9 +57,11 @@ export function useTimerPresentation(snapshot: TimerState, sound: boolean) {
     const media = matchMedia('(prefers-reduced-motion: reduce)')
     if (media.matches) return
     let animation: Animation | undefined
+    let dotAnimation: Animation | undefined
     try { animation = glow.current?.animate([{ opacity: 0 }, { opacity: .5, offset: .25 }, { opacity: 0 }], { duration: 1100, easing: 'ease-out' }) } catch { /* Completion UI remains available. */ }
+    try { dotAnimation = document.querySelector('h1 > span')?.animate([{ scale: '1' }, { scale: '1.25', offset: .35 }, { scale: '1' }], { duration: 900, easing: 'ease-out' }) } catch { /* Status color remains visible. */ }
     try { if (sound) navigator.vibrate?.([30, 40, 30]) } catch { /* Optional device capability. */ }
-    const cancel = () => { animation?.cancel() }
+    const cancel = () => { animation?.cancel(); dotAnimation?.cancel() }
     const visibility = () => { if (document.hidden) cancel() }
     media.addEventListener('change', cancel); document.addEventListener('visibilitychange', visibility)
     return () => { cancel(); media.removeEventListener('change', cancel); document.removeEventListener('visibilitychange', visibility) }

@@ -13,7 +13,7 @@ function playNotes(notes: number[], volume: number, duration: number) {
       gain.gain.exponentialRampToValueAtTime(volume, time + .02)
       gain.gain.exponentialRampToValueAtTime(.0001, time + duration)
       oscillator.connect(gain); gain.connect(ctx.destination)
-      oscillator.onended = () => { oscillator.disconnect(); gain.disconnect() }
+      oscillator.onended = () => { oscillator.onended = null; oscillator.disconnect(); gain.disconnect() }
       oscillator.start(time); oscillator.stop(time + duration + .04)
     })
   } catch { /* 音频不可用时显示页面提示 */ }

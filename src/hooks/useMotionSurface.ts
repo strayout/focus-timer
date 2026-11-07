@@ -56,9 +56,10 @@ export function useMotionSurface(durationMs: number) {
       group.style.setProperty('--preset-x', `${selected.offsetLeft}px`)
       group.style.setProperty('--preset-width', `${selected.offsetWidth}px`)
     }
-    const observer = new ResizeObserver(measure)
-    observer.observe(group); measure()
-    return () => observer.disconnect()
+    let observer: ResizeObserver | undefined
+    try { observer = new ResizeObserver(measure); observer.observe(group) } catch { /* Static selection still works. */ }
+    measure()
+    return () => observer?.disconnect()
   }, [durationMs])
   return root
 }

@@ -102,7 +102,11 @@ export function ParticleRing({ snapshot }: { snapshot: TimerState }) {
       mx = (event.clientX - rect.left) * size / rect.width; my = (event.clientY - rect.top) * size / rect.height
     }
     const leave = () => { mx = my = -1000 }
-    const observer = new IntersectionObserver(entries => { visible = entries[0]?.isIntersecting ?? true; sync() })
+    let observer: IntersectionObserver | undefined
+    try {
+      observer = new IntersectionObserver(entries => { visible = entries[0]?.isIntersecting ?? true; sync() })
+      observer.observe(cv)
+    } catch { /* Visibility API is an optimization; the timer remains independent. */ }
     const resize = () => { setup(); color = ''; sync() }
     let themeTimeout = 0
     const themeObserver = new MutationObserver(() => {
@@ -111,12 +115,12 @@ export function ParticleRing({ snapshot }: { snapshot: TimerState }) {
     })
     themeObserver.observe(doc.documentElement, { attributes: true, attributeFilter: ['class', 'data-phase'] })
     wake.current = sync
-    setup(); observer.observe(cv); sync()
+    setup(); sync()
     cv.addEventListener('pointermove', move); cv.addEventListener('pointerleave', leave)
     media.addEventListener('change', sync); doc.addEventListener('visibilitychange', sync)
     win.addEventListener('resize', resize)
     return () => {
-      wake.current = () => {}; stop(); observer.disconnect(); themeObserver.disconnect(); win.clearTimeout(themeTimeout)
+      wake.current = () => {}; stop(); observer?.disconnect(); themeObserver.disconnect(); win.clearTimeout(themeTimeout)
       cv.removeEventListener('pointermove', move); cv.removeEventListener('pointerleave', leave)
       media.removeEventListener('change', sync); doc.removeEventListener('visibilitychange', sync)
       win.removeEventListener('resize', resize)
