@@ -14,6 +14,7 @@ import { useTimer } from '@/hooks/useTimer'
 import { useQuotes } from '@/hooks/useQuotes'
 import { usePipWindow } from '@/hooks/usePipWindow'
 import { useLocalState } from '@/hooks/useLocalState'
+import { useMotionSurface } from '@/hooks/useMotionSurface'
 import { prepareAudio, playCompletion, playInteraction } from '@/lib/feedback'
 import { formatTime, MAX_DURATION } from '@/lib/timer'
 import { phaseOf } from '@/lib/progress'
@@ -41,6 +42,7 @@ export default function App() {
     }
   })
   const { state, remainingMs } = timer
+  const motionRoot = useMotionSurface(state.durationMs)
   const quotes = useQuotes(state.status === 'running', settings.interval)
   const pip = usePipWindow()
   const busy = state.status === 'running' || state.status === 'paused'
@@ -70,7 +72,7 @@ export default function App() {
     setCustomOpen(false)
   }
   const storageFailed = settingsFailed || presetsFailed || timer.storageFailed || quotes.storageFailed
-  return <div className="app-shell">
+  return <div className="app-shell" ref={motionRoot} data-running={state.status === 'running'} data-status={state.status}>
     <header className="topbar"><a className="brand" href="./" aria-label="一刻首页"><span className="brand-mark"><Timer /></span><strong>一刻<span>FOCUS TIMER</span></strong></a><nav aria-label="应用工具"><TimerCommands status={state.status} toggle={toggle} reset={timer.reset} next={quotes.next} configure={configure} openPip={() => void openPip()} toggleTheme={() => setSettings({ ...settings, dark: !settings.dark })} custom={() => { setDuration(state.durationMs); setCustomOpen(true) }} /><Button variant="ghost" size="icon" aria-label={settings.dark ? '切换浅色模式' : '切换深色模式'} onClick={() => setSettings({ ...settings, dark: !settings.dark })}>{settings.dark ? <Sun /> : <Moon />}</Button><Button variant="outline" onClick={() => void openPip()}><PictureInPicture2 data-icon="inline-start" />{pip.pipWindow ? (pip.preferences.locked ? '悬浮窗 · 防误触已锁定' : '查看悬浮窗') : (pip.preferences.locked ? '桌面悬浮窗 · 防误触已锁定' : '桌面悬浮窗')}<ArrowUpRight data-icon="inline-end" /></Button></nav></header>
     <main className="main-content"><div className="page-intro"><div><div className="eyebrow"><span />给专注，留一点空间</div><h1>把这一刻，交给自己<span>。</span></h1><p>不必等动力到来。从一个小小的开始，让行动慢慢发生。</p></div><span className="local-note"><span className="status-dot" />本地保存 · 安心专注</span></div>
     {storageFailed && <Alert variant="destructive"><AlertTitle>本地保存不可用</AlertTitle><AlertDescription>请检查浏览器的存储设置；当前会话仍可使用，刷新可能丢失修改。</AlertDescription></Alert>}
