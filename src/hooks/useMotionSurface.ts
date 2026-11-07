@@ -19,6 +19,8 @@ export function useMotionSurface(durationMs: number) {
       if (frame) return
       frame = win.requestAnimationFrame(() => {
         frame = 0
+        el.style.setProperty('--grid-x', `${Math.max(-6, Math.min(6, (x / win.innerWidth - .5) * 12))}px`)
+        el.style.setProperty('--grid-y', `${Math.max(-6, Math.min(6, (y / win.innerHeight - .5) * 12))}px`)
         const card = target?.closest<HTMLElement>('.timer-panel, .inspiration-panel, .gentle-note, .tools-panel')
         if (card) {
           const rect = card.getBoundingClientRect()
