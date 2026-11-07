@@ -40,6 +40,13 @@ backups/
 语录原始素材.txt
 src/data/quotes.cleaning-report.json
 
+# Local learning materials and generated documents
+/MISSION.md
+/learning/
+/projects/
+/output/
+/tmp/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

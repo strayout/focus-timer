@@ -1,10 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
 import defaults from '@/data/quotes.default.json'
-import { useLocalState } from './useLocalState'
-export interface Quote { id: string; text: string; author?: string; createdAt: string }
-const isQuotes = (v: unknown): v is Quote[] => Array.isArray(v) && v.every(q => q && typeof q.id === 'string' && typeof q.text === 'string' && q.text.trim().length > 0 && typeof q.createdAt === 'string' && (q.author === undefined || typeof q.author === 'string'))
+import { readStored, saveStored } from '@/lib/storage'
+import { IMPORTS_KEY, QUOTES_KEY, isIds, isQuotes, mergeCuratedQuotes } from '@/lib/quoteLibrary'
+export type { Quote } from '@/lib/quoteLibrary'
 export function useQuotes(running: boolean, intervalSeconds: number) {
-  const [quotes, setQuotes, storageFailed] = useLocalState<Quote[]>('focus.quotes.v1', defaults, isQuotes)
+  const [imported] = useState(() => readStored(IMPORTS_KEY, [], isIds))
+  const [quotes, setQuotes] = useState(() => mergeCuratedQuotes(readStored(QUOTES_KEY, defaults, isQuotes), defaults, imported))
+  const [storageFailed, setStorageFailed] = useState(false)
+  useEffect(() => {
+    // Save quotes before acknowledging the batch, so failed writes can be retried on reload.
+    const saved = saveStored(QUOTES_KEY, quotes)
+    const acknowledged = saved && saveStored(IMPORTS_KEY, [...new Set([...imported, ...defaults.filter(q => q.id.startsWith('curated-')).map(q => q.id)])])
+    queueMicrotask(() => setStorageFailed(!acknowledged))
+  }, [quotes, imported])
   const [id, setId] = useState(() => quotes[Math.floor(Math.random() * quotes.length)]?.id)
   const next = useCallback(() => {
     const pool = quotes.filter(q => q.id !== id)

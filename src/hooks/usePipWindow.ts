@@ -21,10 +21,13 @@ export function usePipWindow() {
       pip.document.title = '一刻 · 专注中'
       document.querySelectorAll('style, link[rel="stylesheet"]').forEach(node => pip.document.head.appendChild(node.cloneNode(true)))
       pip.document.documentElement.lang = 'zh-CN'
-      const syncTheme = () => pip.document.documentElement.classList.toggle('dark', document.documentElement.classList.contains('dark'))
+      const syncTheme = () => {
+        pip.document.documentElement.classList.toggle('dark', document.documentElement.classList.contains('dark'))
+        pip.document.documentElement.dataset.phase = document.documentElement.dataset.phase ?? 'idle'
+      }
       syncTheme()
       const observer = new MutationObserver(syncTheme)
-      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-phase'] })
       pip.document.body.className = 'pip-body'
       active.current = pip; setPipWindow(pip)
       pip.addEventListener('pagehide', () => { observer.disconnect(); active.current = null; if (mounted.current) setPipWindow(null) }, { once: true })
