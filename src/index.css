@@ -402,3 +402,132 @@ h1 > span { display: inline-block; position: relative; transform-origin: 50% 70%
 :root:not(.dark) { --muted-foreground: #626679; }
 .app-shell[data-running='true'] .page-intro :is(p, .eyebrow, .local-note) { color: var(--foreground); }
 .app-shell[data-running='true'] .side-column .quote-label { opacity: 1; color: var(--foreground); }
+
+/* F · 质感：安静的仪器。楷体是人的声音（标题、语录），Geist 细体是仪表读数；装饰做减法。 */
+:root { --font-voice: 'KaiTi', 'STKaiti', 'Kaiti SC', 'Microsoft YaHei', serif; --hairline: color-mix(in srgb, var(--foreground) 9%, transparent);
+  --phase-accent: #5546a8; --background: #eef0f4; --foreground: #1c1e2b; --card: #fbfbfd; --card-foreground: #1c1e2b; --popover: #fbfbfd; --popover-foreground: #1c1e2b;
+  --muted: #e6e8ee; --secondary: #e9e9f1; --secondary-foreground: #463a8c; --accent: #e8e7f2; --accent-foreground: #463a8c; --border: #dcdee6; --input: #d3d5df; --ring-track: #dfe0e9; }
+:root:not(.dark) { --muted-foreground: #5a5e70; }
+:root.dark { --hairline: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --phase-accent: #a99bf0; --phase-ink: #18142b; --background: #0e0f15; --foreground: #eceaf4; --card: #16171f; --card-foreground: #eceaf4; --popover: #1a1b24; --popover-foreground: #eceaf4;
+  --muted: #1f202a; --muted-foreground: #a2a1b5; --secondary: #24232f; --secondary-foreground: #cfc6fb; --accent: #262531; --accent-foreground: #cfc6fb; --border: #262733; --input: #32333f; --ring-track: #2a2b37; }
+:root[data-phase='paused'] { --phase-accent: #96591a; }
+:root.dark[data-phase='paused'] { --phase-accent: #e2b36e; }
+:root[data-phase='done'] { --phase-accent: #27705f; }
+:root.dark[data-phase='done'] { --phase-accent: #86ccb6; }
+
+/* Backdrop: one soft light source; the grid recedes to a whisper. */
+.app-shell::before { background: radial-gradient(ellipse 60% 55% at 30% 38%, color-mix(in srgb, var(--primary) 7%, transparent), transparent 70%), linear-gradient(color-mix(in srgb, var(--foreground) 1.6%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--foreground) 1.6%, transparent) 1px, transparent 1px); background-size: auto, 72px 72px, 72px 72px; }
+.environment-halos > span { background: radial-gradient(circle, color-mix(in srgb, var(--primary) 5%, transparent), transparent 68%); }
+.dark .environment-halos > span { background: radial-gradient(circle, color-mix(in srgb, var(--primary) 8%, transparent), transparent 68%); }
+
+/* Masthead */
+.topbar { height: 76px; max-width: 1228px; padding: 0 24px; border-bottom-color: var(--hairline); }
+.brand { gap: 11px; }
+.brand-mark { width: 34px; height: 34px; box-shadow: none; }
+.brand-mark svg { width: 19px; height: 19px; stroke-width: 1.75; }
+.brand strong { font-family: var(--font-voice); font-size: 25px; font-weight: 400; letter-spacing: 3px; gap: 12px; }
+.brand strong span { font-family: var(--font-sans); font-size: 10.5px; letter-spacing: 2.6px; }
+.topbar nav { gap: 6px; }
+.topbar nav button { font-weight: 450; }
+
+/* Intro: a line of handwriting, not a billboard. */
+.main-content { max-width: 1228px; padding: 32px 24px 20px; }
+.page-intro { margin-bottom: 24px; align-items: flex-end; }
+.eyebrow { font-size: 12px; letter-spacing: 3px; margin-bottom: 12px; gap: 10px; }
+.eyebrow > span { width: 18px; height: 1px; }
+h1 { font-family: var(--font-voice); font-size: clamp(28px, 2.9vw, 38px); font-weight: 400; letter-spacing: 2px; line-height: 1.4; }
+.page-intro p { font-size: 14px; line-height: 1.7; margin-top: 10px; }
+.local-note { font-size: 12px; gap: 8px; margin-bottom: 5px; }
+.status-dot { width: 6px; height: 6px; }
+.status-dot.active { box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent); }
+
+/* Surfaces: solid, hairline-edged, one long soft shadow. */
+.workspace { grid-template-columns: 1.15fr 1fr; gap: 26px; align-items: stretch; }
+.timer-panel, .tools-panel, .inspiration-panel { background: var(--card); backdrop-filter: none; border: 1px solid var(--hairline); box-shadow: 0 1px 2px color-mix(in srgb, var(--foreground) 3%, transparent), 0 28px 56px -36px color-mix(in srgb, var(--foreground) 22%, transparent); }
+.dark :is(.timer-panel, .tools-panel, .inspiration-panel) { box-shadow: inset 0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent), 0 28px 56px -30px #000a; }
+.timer-panel { border-radius: 24px; padding: 26px 36px 28px; }
+.panel-heading > span:first-child { font-size: 13px; font-weight: 550; letter-spacing: .6px; gap: 9px; }
+.panel-heading svg { width: 15px; height: 15px; }
+.section-caption { font-size: 12px; }
+
+/* The dial */
+.timer-ring { width: min(100%, 344px); margin: 12px auto 20px; }
+.timer-ring::before { inset: 16%; background: radial-gradient(circle, color-mix(in srgb, var(--primary) 6%, transparent), transparent 70%); }
+.timer-ring .dial-mask-minor { stroke: #fff; stroke-width: 5; }
+.timer-ring .dial-mask-major { stroke: #fff; stroke-width: 10; }
+.timer-ring .dial-marks { stroke: color-mix(in srgb, var(--foreground) 30%, transparent); stroke-width: 12; }
+.timer-ring .dial-elapsed { stroke: var(--primary); stroke-width: 12; }
+.timer-ring .ring-track { stroke-width: 1; }
+.timer-eyebrow { font-family: var(--font-voice); font-size: 15px; letter-spacing: 2px; margin-bottom: 10px; }
+.timer-digits { font-size: clamp(56px, 5.6vw, 76px); font-weight: 250; letter-spacing: -3.5px; line-height: 1.1; }
+.timer-digits[data-hours='true'] { font-size: clamp(34px, 4.2vw, 50px); letter-spacing: -2px; }
+.timer-caption { font-size: 12px; letter-spacing: 2px; margin-top: 16px; gap: 9px; }
+
+/* Durations as one segmented control */
+.small-label { font-size: 12px; letter-spacing: 1px; margin-bottom: 10px; }
+.presets { gap: 2px; padding: 4px; border-radius: 14px; background: color-mix(in srgb, var(--foreground) 5%, transparent); }
+.presets [data-slot='toggle-group-item'] { height: 38px; border-color: transparent !important; border-radius: 10px !important; background: transparent; font-size: 15px; font-weight: 450; font-variant-numeric: tabular-nums; color: var(--muted-foreground); gap: 4px; }
+.presets [data-slot='toggle-group-item']:hover { background: transparent; color: var(--foreground); }
+.presets span { font-size: 11px; }
+.presets [data-state='on'] { color: var(--foreground); background: var(--card); box-shadow: 0 1px 3px color-mix(in srgb, var(--foreground) 12%, transparent); }
+.presets::before { inset: 4px auto 4px 0; border: 0; background: var(--card); box-shadow: 0 1px 3px color-mix(in srgb, var(--foreground) 14%, transparent), 0 0 0 1px var(--hairline); }
+.dark .presets::before, .dark .presets [data-state='on'] { background: color-mix(in srgb, var(--foreground) 11%, var(--card)); }
+.presets[data-indicated='true'] [data-state='on'] { background: transparent; box-shadow: none; }
+.custom-presets { margin-top: 10px; }
+.timer-actions { margin-top: 16px; gap: 10px; grid-template-columns: 1fr 1.9fr; }
+.timer-actions button { height: 50px; border-radius: 14px; font-size: 14px; letter-spacing: 1px; }
+.timer-actions button:first-child { background: transparent; border-color: var(--hairline); box-shadow: none; }
+.start-button { box-shadow: inset 0 1px 0 #ffffff26, 0 8px 20px -8px color-mix(in srgb, var(--primary) 55%, transparent); }
+.timer-footnote { font-size: 12px; margin-top: 16px; gap: 7px; }
+.dark .start-button { background: color-mix(in srgb, var(--primary) 84%, var(--background)); }
+
+/* Quote card: the sentence is the only ornament. */
+.inspiration-panel { flex: 1; border-radius: 24px; min-height: 0; padding: 26px 32px 16px; background: linear-gradient(160deg, color-mix(in srgb, var(--primary) 5%, var(--card)), var(--card) 60%); }
+.inspiration-panel::before { display: none; }
+.quote-label { border: 0; padding: 0; font-size: 12px; letter-spacing: 1px; color: var(--muted-foreground); }
+.quote-symbol { font: 56px/1 Georgia, serif; height: 34px; margin-top: 30px; opacity: .4; }
+blockquote, .quote-letters, .quote-outgoing { font-family: var(--font-voice); font-size: 27px; font-weight: 400; line-height: 1.75; letter-spacing: 1.5px; }
+.quote-author { font-size: 13px; margin: 18px 0 34px; letter-spacing: .5px; }
+.quote-bottom { border-top-color: var(--hairline); padding-top: 10px; }
+.quote-bottom > span { font-size: 12px; gap: 8px; }
+.side-column { gap: 20px; }
+.gentle-note { padding: 4px 6px; gap: 14px; align-items: center; }
+.leaf-mark { width: 38px; height: 38px; border-radius: 50%; }
+.gentle-note h2, .tool-title h2 { font-size: 13.5px; font-weight: 550; margin-bottom: 5px; }
+.gentle-note p, .tool-title p { font-size: 12.5px; line-height: 1.7; }
+.tools-panel { border-radius: 20px; padding: 2px 22px; }
+.tool-row { padding-block: 17px; }
+.tool-row + .tool-row { border-top-color: var(--hairline); }
+.tool-title { gap: 12px; }
+.tool-title > svg { margin-top: 3px; }
+.tool-row button { font-size: 12.5px; padding-inline: 8px; }
+.pip-link { margin-top: -4px; font-size: 13px; color: var(--muted-foreground); }
+.pip-support { font-size: 12px; margin-top: -14px; }
+footer { font-size: 12px; padding-top: 30px; border-top: 0; }
+[data-slot='dialog-content'] { border-color: var(--hairline); border-radius: 20px; }
+
+@media (max-width: 850px) { .workspace { grid-template-columns: 1.1fr 1fr; gap: 18px; } .timer-panel { padding-inline: 22px; } .inspiration-panel { padding-inline: 22px; } blockquote, .quote-letters, .quote-outgoing { font-size: 23px; } .presets span { display: none; } }
+@media (max-width: 650px) { .topbar { height: 64px; padding-inline: 16px; } .brand strong { font-size: 22px; } .main-content { padding: 26px 16px 20px; } .page-intro { margin-bottom: 22px; } h1 { font-size: 27px; letter-spacing: 1px; } .page-intro p { font-size: 13px; } .workspace { grid-template-columns: 1fr; } .timer-panel { padding: 22px 20px 24px; } .timer-digits { font-size: 68px; } .timer-ring { width: min(100%, 320px); } .presets span { display: inline; } blockquote, .quote-letters, .quote-outgoing { font-size: 24px; } footer { font-size: 11px; gap: 12px; } }
+@media (max-width: 360px) { .timer-panel { padding-inline: 14px; } .topbar { padding-inline: 12px; } .brand strong { font-size: 20px; } .brand-mark { width: 30px; height: 30px; } h1 { font-size: 24px; } .presets [data-slot='toggle-group-item'] { font-size: 13px; padding-inline: 2px; } .presets span { font-size: 9px; } .timer-digits { font-size: 60px; } }
+
+/* Floating window: a single quiet surface. The OS (or PiP) frame is the only frame. */
+.mini-timer { padding: 9px 14px 13px; background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--primary) 9%, var(--card)), var(--card) 62%); box-shadow: inset 0 0 0 1px var(--hairline); }
+.mini-timer::before { display: none; }
+.mini-heading { gap: 10px; }
+.mini-time { font-size: 42px; font-weight: 275; letter-spacing: -2px; }
+.mini-controls { gap: 4px; margin-top: 3px; }
+.mini-controls button { color: var(--muted-foreground); border-radius: 9px; transition: color .15s, background-color .15s; }
+.mini-controls button:hover:not(:disabled) { color: var(--foreground); background: color-mix(in srgb, var(--foreground) 7%, transparent); }
+.mini-controls button:first-child { color: var(--foreground); }
+.mini-controls button[aria-expanded='true']:not(:hover) { background: transparent; }
+.mini-controls button svg { width: 15px; height: 15px; stroke-width: 1.75; }
+.mini-controls button[aria-pressed='true'] { color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, transparent); }
+.mini-quote { font-family: var(--font-voice); font-size: 13px; line-height: 18px; letter-spacing: .5px; margin-top: 10px; color: color-mix(in srgb, var(--foreground) 78%, transparent); }
+.mini-progress { inset: auto 0 0; height: 2px; border-radius: 0; background: color-mix(in srgb, var(--foreground) 7%, transparent); }
+.mini-progress > span { transition: width .3s linear; }
+.mini-window-controls { inset: 6px 7px auto; }
+.mini-window-controls button { opacity: 0; transition: opacity .2s, background-color .15s; }
+.mini-timer:hover .mini-window-controls button, .mini-window-controls button:focus-visible { opacity: .55; }
+.mini-window-controls button:hover:not(:disabled) { opacity: 1; }
+.mini-timer:hover .mini-window-controls button:disabled { opacity: .2; }
