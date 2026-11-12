@@ -36,6 +36,21 @@ npm run build
 npm run preview
 ```
 
+## 桌面版（Tauri 2，原型）
+
+网页版不受影响；桌面版是同一套前端外加 `src-tauri/` 窗口壳。需要 Rust（rustup，MSVC 工具链）、Visual Studio Build Tools 的 C++ 组件和 WebView2。
+
+```sh
+npm run desktop:dev      # 开发：自动启动 Vite 并打开桌面窗口
+npm run desktop:build    # 生成安装包（NSIS），位于 src-tauri/target/release/bundle/
+```
+
+- 主窗口里的“桌面悬浮窗”在桌面版打开独立的无边框置顶窗口（`mini.html`），不再使用 Document PiP。拖动窗口空白处移动；左上角图标重新打开主窗口，右上角关闭悬浮窗。
+- 主窗口和悬浮窗是对等的：各自运行 `useTimer`，读写同一份 `localStorage`，通过 `storage` 事件互相跟随。关闭主窗口后悬浮窗继续计时；两个窗口都关闭时应用退出，下次启动按保存的结束时间校准。
+- 壳层只管窗口（`show_window` 一个命令 + 窗口位置记忆），不包含任何计时逻辑。窗口定义在 `src-tauri/tauri.conf.json`，前端入口在 `src/adapters/desktop.ts`。
+- 完成提示音、系统通知和语录轮换通过 Web Locks（`src/lib/locks.ts`）保证只由一个窗口执行。
+- 暂未实现：托盘、原生通知、全局快捷键、开机启动；macOS / Linux 未验收。
+
 ## 使用
 
 - 选择 5 / 15 / 25 / 45 / 60 分钟，或在“自定义时长”中设置时、分、秒并保存预设。

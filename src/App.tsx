@@ -16,7 +16,9 @@ import { usePipWindow } from '@/hooks/usePipWindow'
 import { useLocalState } from '@/hooks/useLocalState'
 import { useMotionSurface } from '@/hooks/useMotionSurface'
 import { useTimerPresentation } from '@/hooks/useTimerPresentation'
-import { prepareAudio, playCompletion, playInteraction } from '@/lib/feedback'
+import { prepareAudio, announceCompletion, playInteraction } from '@/lib/feedback'
+import { SETTINGS_KEY, defaultSettings, validSettings } from '@/lib/settings'
+import { isDesktop, showWindow } from '@/adapters/desktop'
 import { formatTime, MAX_DURATION } from '@/lib/timer'
 import { phaseOf } from '@/lib/progress'
 import { TimerCommands } from '@/components/TimerCommands'
@@ -26,22 +28,18 @@ import { QuoteManager } from '@/components/QuoteManager'
 import { MiniTimer } from '@/components/MiniTimer'
 import { AnimatedQuote } from '@/components/visuals/AnimatedQuote'
 
-interface Settings { dark: boolean; sound: boolean; interval: number }
-const validSettings = (v: unknown): v is Settings => !!v && typeof v === 'object' && typeof (v as Settings).dark === 'boolean' && typeof (v as Settings).sound === 'boolean' && Number.isInteger((v as Settings).interval) && (v as Settings).interval >= 5 && (v as Settings).interval <= 3600
+const initialSettings = defaultSettings()
 const validPresets = (v: unknown): v is number[] => Array.isArray(v) && v.every(n => Number.isInteger(n) && n > 0 && n <= MAX_DURATION)
 const basePresets = [5, 15, 25, 45, 60].map(n => n * 60000)
 export default function App() {
-  const [settings, setSettings, settingsFailed] = useLocalState<Settings>('focus.settings.v1', { dark: matchMedia('(prefers-color-scheme: dark)').matches, sound: true, interval: 60 }, validSettings)
+  const [settings, setSettings, settingsFailed] = useLocalState(SETTINGS_KEY, initialSettings, validSettings)
   const [customPresets, setCustomPresets, presetsFailed] = useLocalState<number[]>('focus.presets.v1', [], validPresets)
   const [duration, setDuration] = useState(25 * 60000)
   const [customOpen, setCustomOpen] = useState(false)
   const [notification, setNotification] = useState(typeof Notification !== 'undefined' ? Notification.permission : 'unsupported')
   const timer = useTimer(() => {
-    if (settings.sound) playCompletion()
+    announceCompletion(settings.sound)
     toast.success('专注完成，给努力的自己一点掌声。', { duration: 10000 })
-    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-      try { new Notification('一刻 · 专注完成', { body: '这一段时间属于你。起身活动一下，休息片刻吧。' }) } catch { /* 页面内提示已显示 */ }
-    }
   })
   const { state, remainingMs } = timer
   const motionRoot = useMotionSurface(state.durationMs)
@@ -66,7 +64,7 @@ export default function App() {
     if (notification === 'default') void requestNotifications()
   }
   function configure(value: number) { if (!busy && value > 0) timer.configure(value) }
-  async function openPip() { try { await pip.open() } catch (error) { toast.info(error instanceof Error ? error.message : '暂时无法打开悬浮窗，请再试一次。') } }
+  async function openPip() { try { await (isDesktop ? showWindow('mini') : pip.open()) } catch (error) { toast.info(error instanceof Error ? error.message : '暂时无法打开悬浮窗，请再试一次。') } }
   function applyCustom(save: boolean) {
     if (!duration || busy) return
     configure(duration)
@@ -91,7 +89,7 @@ export default function App() {
     </section><aside className="side-column"><section className="inspiration-panel"><div className="panel-heading"><span><QuoteIcon />此刻的灵感</span><span className="quote-label">给前行中的你</span></div><div className="quote-symbol" aria-hidden="true">“</div><AnimatedQuote text={quotes.quote?.text ?? '给自己一句鼓励，从添加第一条语录开始。'} /><p className="quote-author">— {quotes.quote?.author ?? '给自己的话'}</p><div className="quote-bottom"><span><span className="status-dot" />专注时每 {settings.interval} 秒更新</span><Button variant="ghost" size="sm" onClick={quotes.next} disabled={quotes.quotes.length < 2}><Shuffle data-icon="inline-start" />换一句</Button></div></section>
     <section className="gentle-note"><span className="leaf-mark"><Leaf /></span><div><h2>先开始，再慢慢进入状态</h2><p>把手机放远一点，把任务缩小一点。<br />今天的进步，可以从这几分钟开始。</p></div></section>
     <section className="tools-panel"><div className="tool-row"><div className="tool-title"><BookOpen /><div><h2>把鼓励留在身边</h2><p>{quotes.quotes.length} 条语录，陪你一点点向前</p></div></div><QuoteManager quotes={quotes.quotes} setQuotes={quotes.setQuotes} restore={quotes.restore} /></div><div className="tool-row"><div className="tool-title"><Settings2 /><div><h2>按你的节奏来</h2><p>提示音、通知与语录切换</p></div></div><Dialog><DialogTrigger asChild><Button variant="ghost" size="sm">设置<ArrowUpRight data-icon="inline-end" /></Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>专注偏好</DialogTitle><DialogDescription>调整适合自己的提醒方式。</DialogDescription></DialogHeader><FieldGroup><Field orientation="horizontal"><FieldLabel htmlFor="sound"><Volume2 />结束提示音</FieldLabel><Switch id="sound" checked={settings.sound} onCheckedChange={sound => { prepareAudio(); setSettings({ ...settings, sound }) }} /></Field><Field><FieldLabel htmlFor="quote-interval">语录切换间隔（秒）</FieldLabel><Input id="quote-interval" type="number" min="5" max="3600" value={settings.interval} onChange={e => setSettings({ ...settings, interval: Math.max(5, Math.min(3600, Math.trunc(Number(e.target.value) || 5))) })} /><FieldDescription>专注期间自动切换，暂停时停止轮换。</FieldDescription></Field><Field><FieldLabel>浏览器通知</FieldLabel><FieldDescription>{notification === 'granted' ? '通知已开启' : notification === 'denied' ? '通知被拒绝，可在浏览器网站设置中开启；当前使用页面内提示。' : '未开启时，使用页面内提示。'}</FieldDescription><Button variant="outline" onClick={() => void requestNotifications()} disabled={notification === 'granted' || notification === 'denied' || notification === 'unsupported'}><Bell data-icon="inline-start" />开启完成通知</Button></Field></FieldGroup></DialogContent></Dialog></div></section>
-    <Button variant="ghost" className="pip-link" onClick={() => void openPip()}><PictureInPicture2 data-icon="inline-start" />让专注悬浮在桌面上<ArrowUpRight data-icon="inline-end" /></Button>{!pip.supported && <p className="pip-support">悬浮窗请使用 Chrome / Edge 116+</p>}
+    <Button variant="ghost" className="pip-link" onClick={() => void openPip()}><PictureInPicture2 data-icon="inline-start" />让专注悬浮在桌面上<ArrowUpRight data-icon="inline-end" /></Button>{!pip.supported && !isDesktop && <p className="pip-support">悬浮窗请使用 Chrome / Edge 116+</p>}
     </aside></div><footer><span>一刻积累，一点进步。</span><span>无需账号 · 数据仅保存在当前浏览器</span></footer></main>
     {pip.pipWindow && createPortal(<MiniTimer durationMs={state.durationMs} expanded={pip.preferences.expanded} locked={pip.preferences.locked} toggleExpanded={pip.toggleExpanded} toggleLocked={pip.toggleLocked} storageFailed={pip.storageFailed} remainingMs={remainingMs} status={state.status} quote={quotes.quote} toggle={toggle} reset={timer.reset} next={quotes.next} />, pip.pipWindow.document.body)}
     <Toaster position="top-center" richColors theme={settings.dark ? 'dark' : 'light'} />

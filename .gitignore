@@ -16,6 +16,8 @@ blob-report
 coverage
 dist
 dist-ssr
+src-tauri/target
+src-tauri/gen
 *.local
 
 # Environment files and credentials (none required by this application)

@@ -239,6 +239,12 @@ footer { display: flex; justify-content: space-between; padding: 25px 2px 5px; c
 .mini-quote[hidden] { display: none; }
 .mini-progress { position: absolute; inset: auto 9px 4px; height: 2px; overflow: hidden; border-radius: var(--radius); background: var(--ring-track); }
 .mini-progress > span { display: block; height: 100%; background: var(--primary); }
+.mini-window-controls { position: absolute; inset: 7px 8px auto; display: flex; justify-content: space-between; pointer-events: none; }
+.mini-window-controls button { pointer-events: auto; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: var(--radius-md); background: transparent; color: var(--muted-foreground); opacity: .45; cursor: pointer; }
+.mini-window-controls button:hover, .mini-window-controls button:focus-visible { opacity: 1; background: var(--accent); color: var(--foreground); }
+.mini-window-controls button:disabled { opacity: .2; cursor: default; }
+.mini-window-controls svg { width: 12px; height: 12px; }
+[data-tauri-drag-region] { -webkit-user-select: none; user-select: none; }
 @keyframes quote-in { from { opacity: .2; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
 @media (min-width: 1200px) { .main-content { padding-top: 54px; } .timer-panel { padding-inline: 35px; } }
 @media (max-width: 850px) { .topbar { padding-inline: 25px; } .workspace { gap: 18px; grid-template-columns: 1.1fr 1fr; } .timer-panel { padding: 23px 19px; } .inspiration-panel { padding: 23px 20px 15px; } .local-note { display: none; } .tool-title { gap: 6px; } .tool-title > svg { display: none; } .presets { gap: 5px; } .presets [data-slot='toggle-group-item'] { padding-inline: 5px; } }
