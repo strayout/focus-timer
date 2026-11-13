@@ -49,7 +49,10 @@ npm run desktop:build    # 生成安装包（NSIS），位于 src-tauri/target/r
 - 主窗口和悬浮窗是对等的：各自运行 `useTimer`，读写同一份 `localStorage`，通过 `storage` 事件互相跟随。关闭主窗口后悬浮窗继续计时；两个窗口都关闭时应用退出，下次启动按保存的结束时间校准。
 - 壳层只管窗口（`show_window` 一个命令 + 窗口位置记忆），不包含任何计时逻辑。窗口定义在 `src-tauri/tauri.conf.json`，前端入口在 `src/adapters/desktop.ts`。
 - 完成提示音、系统通知和语录轮换通过 Web Locks（`src/lib/locks.ts`）保证只由一个窗口执行。
-- 暂未实现：托盘、原生通知、全局快捷键、开机启动；macOS / Linux 未验收。
+- 托盘：关闭主窗口只是隐藏到托盘，计时照常进行并准时提醒；左键托盘图标打开主窗口，右键菜单可打开悬浮窗或“退出一刻”。再次启动只会唤起已运行的实例。
+- 完成提醒走系统原生通知（网页代码仍使用 `Notification`，由壳层接管）。
+- 为了让隐藏的窗口准时计时，两个窗口都关闭了 WebView2 的后台定时器节流（`additionalBrowserArgs`）；两个窗口的该参数必须保持一致。
+- 暂未实现：全局快捷键、开机启动、自动更新、代码签名；macOS / Linux 未验收。
 
 ## 使用
 

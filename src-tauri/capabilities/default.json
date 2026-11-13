@@ -1,12 +1,16 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Window control for the main and floating windows. No file, shell or network access.",
-  "windows": ["main", "mini"],
+  "description": "Window control and system notifications for the main and floating windows. No file, shell or network access.",
+  "windows": [
+    "main",
+    "mini"
+  ],
   "permissions": [
     "core:default",
     "core:window:allow-set-size",
     "core:window:allow-close",
-    "core:window:allow-start-dragging"
+    "core:window:allow-start-dragging",
+    "notification:default"
   ]
 }
