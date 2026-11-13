@@ -22,13 +22,13 @@ export function MiniTimer({ remainingMs, durationMs, status, quote, toggle, rese
       <button type="button" aria-label="关闭悬浮窗" title="关闭悬浮窗" disabled={locked} onClick={windowControls.close}><X /></button>
     </div>}
     <div className="mini-heading" title={statusLabel} data-tauri-drag-region>
-      <span className={status === 'running' ? 'status-dot active' : 'status-dot'} role="img" aria-label={statusLabel} />
+      <span className="mini-status" data-tauri-drag-region><span className={status === 'running' ? 'status-dot active' : 'status-dot'} role="img" aria-label={statusLabel} /><span aria-hidden="true" data-tauri-drag-region>{statusLabel}</span></span>
       <span className="mini-time" data-tauri-drag-region data-hours={remainingMs >= 3600000} role="timer" aria-label="剩余时间">{formatTime(remainingMs)}</span>
     </div>
     <div className="mini-controls" role="group" aria-label={locked ? '防误触已锁定，仅可解锁' : '悬浮窗控制'}>
-      <Button size="icon" variant="ghost" aria-label={action} title={action} disabled={locked} onClick={() => { if (!locked) toggle() }}>{status === 'running' ? <Pause /> : <Play />}</Button>
       <Button size="icon" variant="ghost" aria-label="重置" title="重置" disabled={locked} onClick={() => { if (!locked) reset() }}><RotateCcw /></Button>
       <Button size="icon" variant="ghost" aria-label="换一句语录" title="换一句语录" disabled={locked} onClick={() => { if (!locked) next() }}><Shuffle /></Button>
+      <Button className="mini-primary" size="icon" variant="ghost" aria-label={action} title={action} disabled={locked} onClick={() => { if (!locked) toggle() }}>{status === 'running' ? <Pause /> : <Play />}</Button>
       <Button size="icon" variant="ghost" aria-label={quoteLabel} title={quoteLabel} aria-expanded={expanded} aria-controls="mini-quote" disabled={locked} onClick={toggleExpanded}>{expanded ? <ChevronUp /> : <ChevronDown />}</Button>
       <Button size="icon" variant="ghost" aria-label={lockLabel} title={`${lockLabel}（仅防误触，不锁定窗口位置）`} aria-pressed={locked} onClick={toggleLocked}>{locked ? <LockKeyhole /> : <LockKeyholeOpen />}</Button>
     </div>
