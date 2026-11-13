@@ -5,7 +5,7 @@
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Manager, WebviewWindowBuilder, WindowEvent,
+    AppHandle, Manager, Webview, WebviewWindow, WebviewWindowBuilder, WindowEvent,
 };
 use tauri_plugin_window_state::StateFlags;
 
@@ -13,6 +13,8 @@ use tauri_plugin_window_state::StateFlags;
 /// Never call this on the main thread: building a webview there deadlocks on Windows.
 fn open_window(app: &AppHandle, label: &str) -> Result<(), String> {
     if let Some(window) = app.get_webview_window(label) {
+        let _ = webview_of(&window).show();
+        let _ = window.eval(SHELL_SHOWN);
         let _ = window.unminimize();
         let _ = window.show();
         return window.set_focus().map_err(|e| e.to_string());
@@ -29,6 +31,18 @@ fn open_window(app: &AppHandle, label: &str) -> Result<(), String> {
         .and_then(|builder| builder.build())
         .map(|_| ())
         .map_err(|e| e.to_string())
+}
+
+/// The webview inside a window. Hiding only the window leaves the page believing it is
+/// visible, so it would keep painting its decorative animations in the tray; hiding the
+/// webview too stops rendering. Timers keep running.
+/// WebView2 stops painting a hidden webview but does not report it to the page, so the
+/// page is told through the hook installed by `followShellVisibility` in src/adapters/desktop.ts.
+const SHELL_HIDDEN: &str = "window.__shellHidden?.(true)";
+const SHELL_SHOWN: &str = "window.__shellHidden?.(false)";
+
+fn webview_of(window: &WebviewWindow) -> &Webview {
+    window.as_ref()
 }
 
 /// Async so that it runs off the main thread (see `open_window`).
@@ -101,6 +115,10 @@ fn main() {
                 if let WindowEvent::CloseRequested { api, .. } = event {
                     api.prevent_close();
                     let _ = window.hide();
+                    if let Some(main) = window.app_handle().get_webview_window("main") {
+                        let _ = webview_of(&main).hide();
+                        let _ = main.eval(SHELL_HIDDEN);
+                    }
                 }
             }
         })

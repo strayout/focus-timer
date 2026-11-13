@@ -22,3 +22,23 @@ export async function closeCurrentWindow() {
   const { getCurrentWindow } = await import('@tauri-apps/api/window')
   await getCurrentWindow().close()
 }
+
+/**
+ * Hiding the main window to the tray stops painting, but WebView2 leaves `document.hidden`
+ * false. The shell calls `window.__shellHidden` instead, and this makes the page's ordinary
+ * visibility API reflect it, so everything already keyed on `document.hidden` and
+ * `visibilitychange` (decorative animations, the canvas, the tick rate) reacts unchanged.
+ */
+export function followShellVisibility() {
+  if (!isDesktop) return
+  const native = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden')?.get
+  if (!native) return
+  let shellHidden = false
+  Object.defineProperty(document, 'hidden', { configurable: true, get: () => shellHidden || native.call(document) })
+  Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => (document.hidden ? 'hidden' : 'visible') })
+  ;(window as Window & { __shellHidden?: (hidden: boolean) => void }).__shellHidden = hidden => {
+    if (hidden === shellHidden) return
+    shellHidden = hidden
+    document.dispatchEvent(new Event('visibilitychange'))
+  }
+}
