@@ -6,7 +6,7 @@
 
 ## 下载
 
-**Windows 桌面版**：前往 [Releases 页面](../../releases/latest)，下载并运行安装包（`一刻_*_x64-setup.exe`）。
+**Windows 桌面版**：前往 [Releases 页面](../../releases/latest)，下载并运行安装包（`yike-focus-timer-*-x64-setup.exe`）。
 
 > 安装包目前没有做代码签名，Windows 可能会弹出 SmartScreen 提示"Windows 已保护你的电脑"。点击"更多信息" → "仍要运行"即可继续安装。这是因为签名证书需要付费购买，不代表软件本身有问题。
 
