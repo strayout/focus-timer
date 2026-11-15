@@ -4,7 +4,12 @@
  * Everything here is a no-op or a rejection in the browser build.
  */
 export type DesktopWindow = 'main' | 'mini'
-export const isDesktop = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
+/** Running inside the Tauri shell (desktop or Android). */
+export const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
+/** The Android app: one window, no tray or floating window, alarms for completion. */
+export const isAndroid = isTauri && /android/i.test(navigator.userAgent)
+/** The desktop app: main window plus the native floating window and tray. */
+export const isDesktop = isTauri && !isAndroid
 
 /** Focuses the window, creating it from src-tauri/tauri.conf.json when it is closed. */
 export async function showWindow(label: DesktopWindow) {

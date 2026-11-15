@@ -6,7 +6,7 @@ import type { TimerStatus } from '@/lib/timer'
 
 interface Props {
   status: TimerStatus; toggle: () => void; reset: () => void; next: () => void
-  configure: (duration: number) => void; openPip: () => void; toggleTheme: () => void; custom: () => void
+  configure: (duration: number) => void; openPip?: () => void; toggleTheme: () => void; custom: () => void
 }
 export function TimerCommands({ status, toggle, reset, next, configure, openPip, toggleTheme, custom }: Props) {
   const [open, setOpen] = useState(false)
@@ -33,7 +33,7 @@ export function TimerCommands({ status, toggle, reset, next, configure, openPip,
           <CommandItem onSelect={() => run(toggle)}>{status === 'running' ? <Pause /> : <Play />}{action}<CommandShortcut>↵</CommandShortcut></CommandItem>
           <CommandItem disabled={status === 'idle'} onSelect={() => run(reset)}><RotateCcw />重置本轮计时</CommandItem>
           <CommandItem onSelect={() => run(next)}><Shuffle />换一句语录</CommandItem>
-          <CommandItem onSelect={() => run(openPip)}><PictureInPicture2 />打开桌面悬浮窗</CommandItem>
+          {openPip && <CommandItem onSelect={() => run(openPip)}><PictureInPicture2 />打开桌面悬浮窗</CommandItem>}
           <CommandItem onSelect={() => run(toggleTheme)}><Moon />切换深浅色主题</CommandItem>
         </CommandGroup><CommandSeparator />
         <CommandGroup heading={busy ? '结束或重置本轮后可调整时长' : '留一段时间'}>

@@ -40,6 +40,25 @@ $env:TMP = "E:\tauri-cache\tmp"
 npm run desktop:build
 ```
 
+### 安卓版
+
+所有工具都装在 `E:ndroid`（C 盘空间不够）：JDK 17、Android SDK（platform 36、build-tools 36、NDK 28.2），Gradle 缓存也在那里。构建前先加载环境：
+
+```powershell
+. E:ndroid\env.ps1
+$env:CARGO_BUILD_JOBS = '2'   # 内存紧张时限制并行，否则 rustc 会因内存不足崩溃
+npx tauri android build --apk --target aarch64
+```
+
+产物在 `src-tauri/gen/android/app/build/outputs/apk/universal/release/`。签名读取 `src-tauri/gen/android/keystore.properties`（不入库）；没有它就输出未签名包。
+
+真机验收清单：
+1. 首次开始计时，允许通知。
+2. 设 1 分钟，开始后锁屏，到点应弹出"专注完成"通知并响铃/震动。
+3. 设 1 分钟，开始后切到别的应用，再暂停回来——暂停后不应再弹通知。
+4. 系统设置里开启省电模式重复第 2 步。
+5. 查看状态栏和底部手势条区域没有压住页面，深色模式下这两条也变深。
+
 ## 架构
 
 层次为 `lib/timer.ts` + `lib/progress.ts`（纯规则，可单测）→ `useTimer`（计时状态）→ 展示组件。计时器状态为 `{ status, durationMs, remainingMs, endsAt }`；运行中根据 `endsAt - Date.now()` 计算剩余时间，界面的 200ms interval 只触发重绘，不参与计时精度。刷新、切回标签页或窗口重新获得焦点后立即按时间戳校准；已完成的计时刷新后不会重复提醒。
@@ -105,6 +124,6 @@ npm run test:e2e
 - 通知和提示音受系统/浏览器权限、静音和自动播放策略限制；保留页面内完成提示作为后备。
 - 清理站点数据（网页版）或卸载应用（桌面版）会清除本地保存的语录、预设和计时记录，没有云端备份。
 - 桌面版目前只验收 Windows；macOS / Linux 未构建、未验收。未做代码签名、开机启动、全局快捷键、自动更新。
-- 安卓等移动端尚未开始适配。
+- 安卓版只在构建层面验证过，锁屏/省电模式下的准时提醒还需真机验收；标题和语录在安卓上回退到系统衬线字体。
 
 更完整的项目现状、决策记录和下一步计划见 [HANDOFF.md](HANDOFF.md)。
