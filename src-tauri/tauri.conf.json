@@ -72,6 +72,9 @@
         "type": "downloadBootstrapper",
         "silent": true
       }
+    },
+    "android": {
+      "versionCode": 1001
     }
   },
   "mainBinaryName": "yike-focus-timer"
